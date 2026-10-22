@@ -130,7 +130,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
 </main>
 
 <footer>
-  © 2026 Maikel van Leeuwen · CC BY 4.0 · Brondata: Gemeenteblad gemeente Amsterdam (KOOP) · Achtergrondkaart © OpenStreetMap-bijdragers, © CARTO
+  © 2026 Maikel van Leeuwen · CC BY 4.0 · Brondata: Gemeenteblad gemeente Amsterdam (KOOP) · Achtergrondkaart © OpenStreetMap-bijdragers
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -163,8 +163,8 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
 
   var map=L.map('map',{preferCanvas:true,zoomControl:true}).setView([52.365,4.89],12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers'}).addTo(map);
   var renderer=L.canvas({padding:.3});
 
   // layers[cat][year] = LayerGroup
