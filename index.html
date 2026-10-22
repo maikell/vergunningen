@@ -110,6 +110,14 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   <div class="tblwrap"><table id="tbl"></table></div>
   <p class="hint">Peildatum: <span id="peil"></span>. 2026 loopt tot de peildatum. Punten zonder locatie in de bron staan wel in de dataset maar niet op de kaart.</p>
 
+  <h2>Waarom zijn er zoveel vakantieverhuurvergunningen?</h2>
+  <div class="note" style="border-left-color:var(--vak)">
+    <p>Het aantal vakantieverhuurvergunningen lijkt hoog, maar dat betekent <strong>niet</strong> dat er elk jaar duizenden nieuwe vakantiewoningen of hotels bijkomen.</p>
+    <p><strong>Wat is het?</strong> Met een vakantieverhuurvergunning mag een bewoner zijn <em>eigen</em> woning, waar hij zelf staat ingeschreven en woont, tijdelijk aan toeristen verhuren, bijvoorbeeld als hij zelf op vakantie is. Dat mag maximaal 30 nachten per jaar en aan hoogstens vier personen tegelijk, met een registratienummer en een melding van elke verhuur. In delen van het centrum is vakantieverhuur verboden. Het is dus geen vergunning om een woning permanent als vakantiewoning of hotel te gebruiken.</p>
+    <p><strong>Waarom zo veel?</strong> De vergunning geldt steeds voor één jaar. Wie elk jaar zijn woning wil kunnen verhuren, moet elk jaar opnieuw een vergunning krijgen, en elk besluit wordt apart gepubliceerd. Over 2023 tot en met 2026 gaat het om ongeveer 21.000 besluiten, maar om ongeveer <strong>11.650 verschillende adressen</strong>. Ruim 1.150 adressen hebben in alle vier de jaren een vergunning gekregen. Per jaar zijn het er rond de 5.000 tot 5.600, op een stad met meer dan 450.000 woningen.</p>
+    <p><strong>Ter controle:</strong> de aantallen per jaar komen overeen met de cijfers die de gemeente zelf over verleende vakantieverhuurvergunningen naar buiten heeft gebracht (ruim 5.300 in 2024).</p>
+  </div>
+
   <h2>Geweigerd of ingetrokken, uitgesplitst</h2>
   <div class="tblwrap"><table id="tblneg"></table></div>
 
@@ -176,9 +184,9 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   var layers={}, counts={}, rowsAll=[];
   var state={view:'alles', years:{}, cats:{}};
   YEARS.forEach(function(y){state.years[y]=true});
-  CATS.forEach(function(c){state.cats[c.k]=true; layers[c.k]={}; counts[c.k]={}; YEARS.forEach(function(y){layers[c.k][y]=L.layerGroup(); counts[c.k][y]=0;});});
+  CATS.forEach(function(c){state.cats[c.k]=(c.k!=='neg'); layers[c.k]={}; counts[c.k]={}; YEARS.forEach(function(y){layers[c.k][y]=L.layerGroup(); counts[c.k][y]=0;});});
 
-  fetch('data/kaart.json').then(function(r){return r.json()}).then(function(d){
+  fetch('data/kaart.json?v=3').then(function(r){return r.json()}).then(function(d){
     document.getElementById('peil').textContent=new Date(d.peildatum).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
     // draw big layers first so small categories stay on top
     var order={vak:0,bnb:1,ontt:2,omzB:3,omzV:4,neg:5};
@@ -207,7 +215,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
     yb.addEventListener('change',function(e){state.years[e.target.dataset.y]=e.target.checked; render();});
     var cb=document.getElementById('cats');
     cb.innerHTML=CATS.map(function(c){
-      return '<label class="row" data-catrow="'+c.k+'"><input type="checkbox" data-c="'+c.k+'" checked><span class="dot" style="--c:var(--'+c.k+')"></span>'+c.lab+'<small>'+fmt(sum(c.k))+'</small></label>';}).join('');
+      return '<label class="row" data-catrow="'+c.k+'"><input type="checkbox" data-c="'+c.k+'"'+(state.cats[c.k]?' checked':'')+'><span class="dot" style="--c:var(--'+c.k+')"></span>'+c.lab+'<small>'+fmt(sum(c.k))+'</small></label>';}).join('');
     cb.addEventListener('change',function(e){state.cats[e.target.dataset.c]=e.target.checked; render();});
     document.querySelectorAll('.tabs button').forEach(function(b){
       b.addEventListener('click',function(){
