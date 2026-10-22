@@ -11,17 +11,17 @@
 <style>
 :root{
   --bg:#f6f4ef; --panel:#fffdf8; --ink:#1d1f22; --muted:#5d6168; --line:#dcd7cc; --accent:#9b2c1f;
-  --omzV:#1f7a5c; --omzG:#c0392b; --omzB:#7f8c8d; --ontt:#1f5fa8; --bnb:#7b3fa0; --vak:#e08a1e;
+  --omzV:#1f7a5c; --neg:#d0021b; --omzB:#7f8c8d; --ontt:#1f5fa8; --bnb:#7b3fa0; --vak:#e08a1e;
   --tile-filter:none;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
   --bg:#15171a; --panel:#1e2125; --ink:#ebe8e1; --muted:#a3a7ad; --line:#33373d; --accent:#e07a5f;
-  --omzV:#3fbf91; --omzG:#ef6a5a; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
+  --omzV:#3fbf91; --neg:#ff4d5e; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
   --tile-filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9);
 }}
 :root[data-theme="dark"]{
   --bg:#15171a; --panel:#1e2125; --ink:#ebe8e1; --muted:#a3a7ad; --line:#33373d; --accent:#e07a5f;
-  --omzV:#3fbf91; --omzG:#ef6a5a; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
+  --omzV:#3fbf91; --neg:#ff4d5e; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
   --tile-filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9);
 }
 *{box-sizing:border-box}
@@ -90,7 +90,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
       <div class="tabs" role="group" aria-label="Weergave">
         <button type="button" data-view="alles" aria-pressed="true">Alles</button>
         <button type="button" data-view="jaar" aria-pressed="false">Per jaar</button>
-        <button type="button" data-view="ontt" aria-pressed="false">Onttrekking</button>
+        <button type="button" data-view="neg" aria-pressed="false">Geweigerd / ingetrokken</button>
       </div>
       <div id="yearBox">
         <h3>Jaarlagen</h3>
@@ -110,6 +110,9 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   <div class="tblwrap"><table id="tbl"></table></div>
   <p class="hint">Peildatum: <span id="peil"></span>. 2026 loopt tot de peildatum. Punten zonder locatie in de bron staan wel in de dataset maar niet op de kaart.</p>
 
+  <h2>Geweigerd of ingetrokken, uitgesplitst</h2>
+  <div class="tblwrap"><table id="tblneg"></table></div>
+
   <h2>Dataset</h2>
   <p>De volledige dataset is vrij te downloaden. Iedere rij is één gepubliceerd besluit met categorie, uitkomst, datum, adres, coördinaten en een link naar de publicatie.</p>
   <div class="dl">
@@ -120,7 +123,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   <h2>Verantwoording en disclaimer</h2>
   <div class="note">
     <p><strong>Bron.</strong> Alle gegevens komen uit de officiële bekendmakingen van de gemeente Amsterdam in het Gemeenteblad, opgehaald via de open-data-zoekdienst van KOOP (repository.overheid.nl). De locatie is de gebiedsmarkering die de gemeente zelf aan elke publicatie meegeeft.</p>
-    <p><strong>Wat telt mee.</strong> Alleen besluiten, geen aanvragen. Omzettingsvergunningen: verleend (ook van rechtswege) en geweigerd. Buiten behandeling gestelde, ingetrokken en vergunningvrije besluiten zijn weggelaten. Bij Bed &amp; Breakfast-besluiten en een deel van de omzettings- en onttrekkingsbesluiten staat de uitkomst niet in de titel; die zijn als <em>besluit (uitkomst niet in titel)</em> opgenomen. Intrekkingen van B&amp;B-vergunningen zijn niet meegenomen.</p>
+    <p><strong>Wat telt mee.</strong> Alleen besluiten, geen aanvragen. Verleende vergunningen (ook van rechtswege) staan per categorie op de kaart. Alle <strong>weigeringen en intrekkingen</strong> van omzettings-, onttrekkings-, B&amp;B- en vakantieverhuurvergunningen staan samen op één aparte rode laag, <em>Geweigerd / ingetrokken</em>; in de pop-up staat om welke vergunning het gaat. Intrekkingen op verzoek van de vergunninghouder tellen mee; aanvragen die vóór een besluit zijn ingetrokken, buiten behandeling gestelde aanvragen en vergunningvrije besluiten niet. Bij Bed &amp; Breakfast-besluiten en een deel van de omzettings- en onttrekkingsbesluiten staat de uitkomst niet in de titel; die zijn als <em>besluit (uitkomst niet in titel)</em> opgenomen.</p>
     <p><strong>Beperkingen.</strong> De indeling is automatisch gemaakt op basis van de titels van de publicaties en kan fouten bevatten. Een vakantieverhuurvergunning geldt per jaar, dus hetzelfde adres kan in meerdere jaren voorkomen. De gemeente publiceert onttrekkingsbesluiten pas sinds 2026 op grote schaal in het Gemeenteblad; de lage aantallen in eerdere jaren zeggen dus vooral iets over de publicatiepraktijk. De kaart toont geen persoonsgegevens, alleen adressen die de gemeente zelf openbaar heeft gemaakt.</p>
     <p><strong>Geen rechten.</strong> Aan deze kaart en dataset kunnen geen rechten worden ontleend. Raadpleeg voor de geldende besluiten altijd de officiële publicatie of de gemeente Amsterdam. Fouten gezien? Laat het weten, dan pas ik het aan.</p>
   </div>
@@ -146,16 +149,18 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
     restyle();
   });
 
+  function neg(r){return r[1]==='G'||r[1]==='I';}
   var CATS=[
     {k:'omzV', lab:'Omzetting – verleend',      test:function(r){return r[0]==='omz'&&r[1]==='V'}},
-    {k:'omzG', lab:'Omzetting – geweigerd',     test:function(r){return r[0]==='omz'&&r[1]==='G'}},
     {k:'omzB', lab:'Omzetting – overig besluit',test:function(r){return r[0]==='omz'&&r[1]==='B'}},
-    {k:'bnb',  lab:'Bed & Breakfast',           test:function(r){return r[0]==='bnb'}},
-    {k:'vak',  lab:'Vakantieverhuur',           test:function(r){return r[0]==='vak'}},
-    {k:'ontt', lab:'Onttrekking',               test:function(r){return r[0]==='ontt'}}
+    {k:'bnb',  lab:'Bed & Breakfast',           test:function(r){return r[0]==='bnb'&&!neg(r)}},
+    {k:'vak',  lab:'Vakantieverhuur',           test:function(r){return r[0]==='vak'&&!neg(r)}},
+    {k:'ontt', lab:'Onttrekking',               test:function(r){return r[0]==='ontt'&&!neg(r)}},
+    {k:'neg',  lab:'Geweigerd / ingetrokken',   test:neg}
   ];
   var CATNAME={omz:'Omzettingsvergunning',ontt:'Onttrekkingsvergunning',bnb:'Bed & Breakfast-vergunning',vak:'Vakantieverhuurvergunning'};
-  var STNAME={V:'verleend',G:'geweigerd',B:'besluit (uitkomst niet in titel)'};
+  var STNAME={V:'verleend',G:'geweigerd',I:'ingetrokken',B:'besluit (uitkomst niet in titel)'};
+  var negCount={};
   var YEARS=['2023','2024','2025','2026'];
   function col(k){return getComputedStyle(root).getPropertyValue('--'+k).trim();}
   function catOf(r){for(var i=0;i<CATS.length;i++) if(CATS[i].test(r)) return CATS[i].k;}
@@ -176,11 +181,12 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   fetch('data/kaart.json').then(function(r){return r.json()}).then(function(d){
     document.getElementById('peil').textContent=new Date(d.peildatum).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
     // draw big layers first so small categories stay on top
-    var order={vak:0,bnb:1,ontt:2,omzB:3,omzV:4,omzG:5};
+    var order={vak:0,bnb:1,ontt:2,omzB:3,omzV:4,neg:5};
     d.rows.map(function(r){return [r,catOf(r)]}).sort(function(a,b){return order[a[1]]-order[b[1]]}).forEach(function(p){
       var r=p[0], k=p[1], y=r[2].slice(0,4); if(!layers[k][y]) return;
       counts[k][y]++;
-      var m=L.circleMarker([r[3],r[4]],{renderer:renderer,radius:k==='vak'?3:5,weight:k==='vak'?0:1,color:'#00000055',fillColor:col(k),fillOpacity:k==='vak'?.55:.9});
+      if(k==='neg'){ var nk=r[1]+r[0]; negCount[nk]=negCount[nk]||{}; negCount[nk][y]=(negCount[nk][y]||0)+1; }
+      var m=L.circleMarker([r[3],r[4]],{renderer:renderer,radius:k==='vak'?3:(k==='neg'?6:5),weight:k==='vak'?0:(k==='neg'?1.5:1),color:k==='neg'?'#ffffff':'#00000055',fillColor:col(k),fillOpacity:k==='vak'?.55:.95});
       m._k=k; m.bindPopup(function(){
         var ds=r[2].slice(6,8)+'-'+r[2].slice(4,6)+'-'+r[2].slice(0,4);
         return '<b>'+esc(r[5]||'Adres: zie publicatie')+'</b><br><span class="badge" style="--c:'+col(k)+'">'+CATNAME[r[0]]+'</span><br>Uitkomst: '+STNAME[r[1]]+'<br>Gepubliceerd: '+ds+
@@ -188,7 +194,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
       });
       layers[k][y].addLayer(m);
     });
-    buildUI(); render(); kpis(); table();
+    buildUI(); render(); kpis(); table(); tableNeg();
   }).catch(function(){document.getElementById('shown').textContent='De kaartdata kon niet worden geladen.';});
 
   function sum(k){return YEARS.reduce(function(a,y){return a+counts[k][y]},0);}
@@ -196,8 +202,8 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   function buildUI(){
     var yb=document.getElementById('years');
     yb.innerHTML=YEARS.map(function(y){
-      var n=CATS.filter(function(c){return c.k!=='ontt'}).reduce(function(a,c){return a+counts[c.k][y]},0);
-      return '<label class="row"><input type="checkbox" data-y="'+y+'" checked> Laag '+y+'<small>'+fmt(n)+'</small></label>';}).join('');
+      var n=CATS.filter(function(c){return c.k!=='neg'}).reduce(function(a,c){return a+counts[c.k][y]},0);
+      return '<label class="row"><input type="checkbox" data-y="'+y+'" checked> Laag '+y+'<small data-yc="'+y+'">'+fmt(n)+'</small></label>';}).join('');
     yb.addEventListener('change',function(e){state.years[e.target.dataset.y]=e.target.checked; render();});
     var cb=document.getElementById('cats');
     cb.innerHTML=CATS.map(function(c){
@@ -214,20 +220,24 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
 
   function render(){
     var v=state.view, shown=0;
-    document.getElementById('yearBox').style.display=v==='jaar'?'':'none';
-    document.getElementById('catBox').style.display=v==='ontt'?'none':'';
+    document.getElementById('yearBox').style.display=v==='alles'?'none':'';
+    document.getElementById('catBox').style.display=v==='neg'?'none':'';
     document.querySelectorAll('[data-catrow]').forEach(function(el){
-      // onttrekking is its own layer: only in "Alles" and in the onttrekking view
-      el.style.display=(v==='jaar'&&el.dataset.catrow==='ontt')?'none':'';
+      // geweigerd/ingetrokken is its own layer: shown in "Alles" and in its own view, not in the year view
+      el.style.display=(v==='jaar'&&el.dataset.catrow==='neg')?'none':'';
     });
     CATS.forEach(function(c){ YEARS.forEach(function(y){
       var on;
-      if(v==='ontt') on=c.k==='ontt';
-      else if(v==='jaar') on=c.k!=='ontt'&&state.years[y]&&state.cats[c.k];
+      if(v==='neg') on=c.k==='neg'&&state.years[y];
+      else if(v==='jaar') on=c.k!=='neg'&&state.years[y]&&state.cats[c.k];
       else on=state.cats[c.k];
       var g=layers[c.k][y];
       if(on){ if(!map.hasLayer(g)) g.addTo(map); shown+=counts[c.k][y]; } else if(map.hasLayer(g)) map.removeLayer(g);
     });});
+    document.querySelectorAll('[data-yc]').forEach(function(el){
+      var y=el.dataset.yc;
+      el.textContent=fmt(v==='neg'?counts.neg[y]:CATS.filter(function(c){return c.k!=='neg'}).reduce(function(a,c){return a+counts[c.k][y]},0));
+    });
     document.getElementById('shown').textContent=fmt(shown)+' besluiten op de kaart.';
   }
 
@@ -236,10 +246,9 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   }
 
   function kpis(){
-    var omz=sum('omzV')+sum('omzG')+sum('omzB');
     var items=[
       ['omzV',fmt(sum('omzV')),'omzettingen verleend'],
-      ['omzG',fmt(sum('omzG')),'omzettingen geweigerd'],
+      ['neg',fmt(sum('neg')),'geweigerd of ingetrokken'],
       ['ontt',fmt(sum('ontt')),'onttrekkingsbesluiten'],
       ['bnb',fmt(sum('bnb')),'B&B-besluiten'],
       ['vak',fmt(sum('vak')),'vakantieverhuurvergunningen']
@@ -254,6 +263,15 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
         YEARS.map(function(y){return '<td>'+fmt(counts[c.k][y])+'</td>'}).join('')+'<td><b>'+fmt(sum(c.k))+'</b></td></tr>';
     });
     document.getElementById('tbl').innerHTML=h+'</tbody>';
+  }
+
+  function tableNeg(){
+    var R=[['Gomz','Omzettingsvergunning geweigerd'],['Gontt','Onttrekkingsvergunning geweigerd'],['Iomz','Omzettingsvergunning ingetrokken'],
+           ['Iontt','Onttrekkingsvergunning ingetrokken'],['Ibnb','Bed & Breakfast-vergunning ingetrokken'],['Ivak','Vakantieverhuurvergunning ingetrokken']];
+    var h='<thead><tr><th>Besluit</th>'+YEARS.map(function(y){return '<th>'+y+(y==='2026'?'*':'')+'</th>'}).join('')+'<th>Totaal</th></tr></thead><tbody>';
+    R.forEach(function(x){ var c=negCount[x[0]]||{}, t=0;
+      h+='<tr><td>'+x[1]+'</td>'+YEARS.map(function(y){t+=c[y]||0; return '<td>'+fmt(c[y]||0)+'</td>'}).join('')+'<td><b>'+fmt(t)+'</b></td></tr>'; });
+    document.getElementById('tblneg').innerHTML=h+'</tbody>';
   }
 })();
 </script>
