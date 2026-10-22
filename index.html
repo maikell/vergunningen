@@ -82,14 +82,15 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
 </header>
 
 <main>
-  <section class="kpis" id="kpis" aria-label="Kerncijfers"></section>
+  <p class="hint" style="margin:22px 0 0">Kerncijfers voor: <strong id="kpiYears"></strong></p>
+  <section class="kpis" id="kpis" aria-label="Kerncijfers" style="margin-top:8px"></section>
 
   <section class="mapwrap" aria-label="Kaart">
     <div class="ctrl">
       <h3>Weergave</h3>
       <div class="tabs" role="group" aria-label="Weergave">
-        <button type="button" data-view="alles" aria-pressed="true">Alles</button>
-        <button type="button" data-view="jaar" aria-pressed="false">Per jaar</button>
+        <button type="button" data-view="jaar" aria-pressed="true">Per jaar</button>
+        <button type="button" data-view="alles" aria-pressed="false">Alles (2023–2026)</button>
         <button type="button" data-view="neg" aria-pressed="false">Geweigerd / ingetrokken</button>
       </div>
       <div id="yearBox">
@@ -102,6 +103,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
       </div>
       <p class="hint" id="shown"></p>
       <p class="hint">Klik op een punt voor adres, datum en de link naar de officiële publicatie.</p>
+      <p class="hint">Let op: vakantieverhuurvergunningen gelden één jaar. Meerdere jaren tegelijk tonen telt dezelfde woningen dubbel; zie de uitleg onder de kaart.</p>
     </div>
     <div id="map" role="region" aria-label="Kaart van Amsterdam met vergunningen"></div>
   </section>
@@ -116,6 +118,14 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
     <p><strong>Wat is het?</strong> Met een vakantieverhuurvergunning mag een bewoner zijn <em>eigen</em> woning, waar hij zelf staat ingeschreven en woont, tijdelijk aan toeristen verhuren, bijvoorbeeld als hij zelf op vakantie is. Dat mag maximaal 30 nachten per jaar en aan hoogstens vier personen tegelijk, met een registratienummer en een melding van elke verhuur. In delen van het centrum is vakantieverhuur verboden. Het is dus geen vergunning om een woning permanent als vakantiewoning of hotel te gebruiken.</p>
     <p><strong>Waarom zo veel?</strong> De vergunning geldt steeds voor één jaar. Wie elk jaar zijn woning wil kunnen verhuren, moet elk jaar opnieuw een vergunning krijgen, en elk besluit wordt apart gepubliceerd. Over 2023 tot en met 2026 gaat het om ongeveer 21.000 besluiten, maar om ongeveer <strong>11.650 verschillende adressen</strong>. Ruim 1.150 adressen hebben in alle vier de jaren een vergunning gekregen. Per jaar zijn het er rond de 5.000 tot 5.600, op een stad met meer dan 450.000 woningen.</p>
     <p><strong>Ter controle:</strong> de aantallen per jaar komen overeen met de cijfers die de gemeente zelf over verleende vakantieverhuurvergunningen naar buiten heeft gebracht (ruim 5.300 in 2024).</p>
+  </div>
+
+  <h2>Waarom zoveel vakantieverhuurvergunningen?</h2>
+  <div class="note" style="border-left-color:var(--vak)">
+    <p>Het grote aantal oranje punten ziet er alarmerend uit, maar het gaat om iets anders dan hotels of permanente Airbnb-woningen.</p>
+    <p><strong>Wat is een vakantieverhuurvergunning?</strong> Met deze vergunning mag een Amsterdammer <strong>zijn eigen woning</strong>, waar hij zelf woont en ingeschreven staat, tijdelijk aan toeristen verhuren, bijvoorbeeld als hij zelf op vakantie is. Dat mag <strong>maximaal 30 nachten per kalenderjaar</strong>, aan maximaal 4 personen tegelijk, en elke verhuurperiode moet vooraf bij de gemeente worden gemeld. De woning blijft dus gewoon een woning en verdwijnt niet van de woningmarkt.</p>
+    <p><strong>Waarom is het aantal zo hoog?</strong> De vergunning geldt <strong>één jaar</strong> en moet elk jaar opnieuw worden aangevraagd. Voor hetzelfde adres verschijnt dus elk jaar een nieuw besluit. Over 2023–2026 gaat het om ruim 21.000 besluiten, maar om <strong>11.654 verschillende adressen</strong>; ruim 1.100 adressen hebben in alle vier de jaren een vergunning gehad. Per jaar gaat het om ongeveer 5.000 tot 5.600 woningen, op een woningvoorraad van zo’n 450.000 woningen in Amsterdam. Een vergunning zegt bovendien niet dat er ook daadwerkelijk is verhuurd.</p>
+    <p>Daarom toont de kaart standaard <strong>alleen 2026</strong>. De weergave <em>Alles (2023–2026)</em> stapelt vier jaargangen op elkaar en geeft daardoor een vertekend beeld.</p>
   </div>
 
   <h2>Geweigerd of ingetrokken, uitgesplitst</h2>
@@ -182,8 +192,8 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
 
   // layers[cat][year] = LayerGroup
   var layers={}, counts={}, rowsAll=[];
-  var state={view:'alles', years:{}, cats:{}};
-  YEARS.forEach(function(y){state.years[y]=true});
+  var state={view:'jaar', years:{}, cats:{}};
+  YEARS.forEach(function(y){state.years[y]=(y==='2026')});
   CATS.forEach(function(c){state.cats[c.k]=(c.k!=='neg'); layers[c.k]={}; counts[c.k]={}; YEARS.forEach(function(y){layers[c.k][y]=L.layerGroup(); counts[c.k][y]=0;});});
 
   fetch('data/kaart.json?v=3').then(function(r){return r.json()}).then(function(d){
@@ -202,7 +212,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
       });
       layers[k][y].addLayer(m);
     });
-    buildUI(); render(); kpis(); table(); tableNeg();
+    buildUI(); render(); table(); tableNeg();
   }).catch(function(){document.getElementById('shown').textContent='De kaartdata kon niet worden geladen.';});
 
   function sum(k){return YEARS.reduce(function(a,y){return a+counts[k][y]},0);}
@@ -211,11 +221,11 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
     var yb=document.getElementById('years');
     yb.innerHTML=YEARS.map(function(y){
       var n=CATS.filter(function(c){return c.k!=='neg'}).reduce(function(a,c){return a+counts[c.k][y]},0);
-      return '<label class="row"><input type="checkbox" data-y="'+y+'" checked> Laag '+y+'<small data-yc="'+y+'">'+fmt(n)+'</small></label>';}).join('');
+      return '<label class="row"><input type="checkbox" data-y="'+y+'"'+(state.years[y]?' checked':'')+'> Laag '+y+'<small data-yc="'+y+'">'+fmt(n)+'</small></label>';}).join('');
     yb.addEventListener('change',function(e){state.years[e.target.dataset.y]=e.target.checked; render();});
     var cb=document.getElementById('cats');
     cb.innerHTML=CATS.map(function(c){
-      return '<label class="row" data-catrow="'+c.k+'"><input type="checkbox" data-c="'+c.k+'"'+(state.cats[c.k]?' checked':'')+'><span class="dot" style="--c:var(--'+c.k+')"></span>'+c.lab+'<small>'+fmt(sum(c.k))+'</small></label>';}).join('');
+      return '<label class="row" data-catrow="'+c.k+'"><input type="checkbox" data-c="'+c.k+'"'+(state.cats[c.k]?' checked':'')+'><span class="dot" style="--c:var(--'+c.k+')"></span>'+c.lab+'<small data-cc="'+c.k+'"></small></label>';}).join('');
     cb.addEventListener('change',function(e){state.cats[e.target.dataset.c]=e.target.checked; render();});
     document.querySelectorAll('.tabs button').forEach(function(b){
       b.addEventListener('click',function(){
@@ -246,6 +256,8 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
       var y=el.dataset.yc;
       el.textContent=fmt(v==='neg'?counts.neg[y]:CATS.filter(function(c){return c.k!=='neg'}).reduce(function(a,c){return a+counts[c.k][y]},0));
     });
+    document.querySelectorAll('[data-cc]').forEach(function(el){ el.textContent=fmt(selSum(el.dataset.cc)); });
+    kpis();
     document.getElementById('shown').textContent=fmt(shown)+' besluiten op de kaart.';
   }
 
@@ -253,7 +265,12 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
     CATS.forEach(function(c){ var fc=col(c.k); YEARS.forEach(function(y){ layers[c.k][y].eachLayer(function(m){m.setStyle({fillColor:fc})}); });});
   }
 
+  function activeYears(){ return state.view==='alles'?YEARS:YEARS.filter(function(y){return state.years[y]}); }
+  function selSum(k){ return activeYears().reduce(function(a,y){return a+counts[k][y]},0); }
   function kpis(){
+    var ay=activeYears(), sum=selSum;
+    var lbl=ay.length===YEARS.length?'2023–2026':(ay.length?ay.join(', '):'geen jaar gekozen');
+    document.getElementById('kpiYears').textContent=lbl;
     var items=[
       ['omzV',fmt(sum('omzV')),'omzettingen verleend'],
       ['neg',fmt(sum('neg')),'geweigerd of ingetrokken'],
