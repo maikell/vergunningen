@@ -14,11 +14,6 @@
   --omzV:#1f7a5c; --neg:#d0021b; --omzB:#7f8c8d; --ontt:#1f5fa8; --bnb:#7b3fa0; --vak:#e08a1e;
   --tile-filter:none;
 }
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --bg:#15171a; --panel:#1e2125; --ink:#ebe8e1; --muted:#a3a7ad; --line:#33373d; --accent:#e07a5f;
-  --omzV:#3fbf91; --neg:#ff4d5e; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
-  --tile-filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9);
-}}
 :root[data-theme="dark"]{
   --bg:#15171a; --panel:#1e2125; --ink:#ebe8e1; --muted:#a3a7ad; --line:#33373d; --accent:#e07a5f;
   --omzV:#3fbf91; --neg:#ff4d5e; --omzB:#9aa5a6; --ontt:#5b9cf0; --bnb:#b47ddc; --vak:#f2a541;
@@ -161,7 +156,7 @@ footer{padding:30px 16px 40px;color:var(--muted);font-size:.85rem}
   var root=document.documentElement, KEY='wv-theme';
   try{ var t=localStorage.getItem(KEY); if(t) root.setAttribute('data-theme',t); }catch(e){}
   document.getElementById('theme').addEventListener('click',function(){
-    var cur=root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var cur=root.getAttribute('data-theme') || 'light';
     var nx=cur==='dark'?'light':'dark'; root.setAttribute('data-theme',nx);
     try{ localStorage.setItem(KEY,nx); }catch(e){}
     restyle();
